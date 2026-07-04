@@ -104,7 +104,7 @@
     font-style: normal;
     font-weight: 700;
     font-size: clamp(36px, 6vw, 56px);
-    margin: 0 0 10px;
+    margin: 0 0 4px;
     letter-spacing: -0.02em;
     color: var(--ink);
     text-shadow: 0 0 60px rgba(241,235,217,0.28);
@@ -144,7 +144,7 @@
 
   .site-description{
     max-width: 640px;
-    margin: 20px auto 0;
+    margin: 6px auto 0;
     text-align: center;
   }
   .welcome-text{
@@ -754,6 +754,7 @@
   .empty-note.show{ display:block; }
 
   footer.site{ text-align:center; margin-top: 50px; font-size: 12.5px; color: var(--ink-faint); }
+  footer.site.gate-footer{ margin-top: 26px; }
   footer.site p{ margin: 0 0 14px; }
   .footer-help{
     display:inline-block;
@@ -763,7 +764,8 @@
   .footer-help > summary{
     list-style:none;
     cursor:pointer;
-    display:inline-block;
+    display:block;
+    text-align:center;
     font-size: 12.5px;
     color: var(--c-accent);
     text-decoration: underline;
@@ -779,6 +781,40 @@
     text-align:left;
   }
   .footer-help-text b{ color: var(--ink); font-weight:600; }
+
+  .footer-links{
+    margin-top: 16px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    flex-wrap:wrap;
+  }
+  .footer-link{
+    background:none; border:none; padding:0;
+    font-family: var(--font-body); font-size: 12px;
+    color: var(--ink-faint);
+    text-decoration: none;
+    cursor:pointer;
+  }
+  .footer-link:hover{ color: var(--c-accent); text-decoration: underline; text-underline-offset:2px; }
+  .footer-link-sep{ color: var(--ink-faint); font-size:12px; }
+
+  .footer-signature{
+    margin: 1360px 0 50px;
+    font-family: var(--font-body);
+    font-style: normal;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-align:center;
+  }
+
+  .install-hint-card{ max-width: 380px; text-align:center; }
+  .install-hint-block{ text-align:left; margin-top: 16px; }
+  .install-hint-device{
+    font-family: var(--font-display); font-weight:700; font-size: 13px;
+    color: var(--ink); margin: 0 0 4px;
+  }
+  .install-hint-steps{ font-size: 12.5px; color: var(--ink-soft); line-height:1.55; margin:0; }
+  .ih-icon{ color: var(--c-accent); }
+
 
   @media (max-width: 600px){
     .wrap{ padding: 68px 14px 100px; }
@@ -1591,6 +1627,44 @@
     <div class="library-cards" id="library-switcher"></div>
   </div>
 
+  <footer class="site gate-footer">
+    <details class="footer-help" id="footer-help">
+      <summary>Как пользоваться сайтом</summary>
+      <p class="footer-help-text">
+        На сайте несколько <b>библиотек</b> — переключайтесь между ними карточками выше.
+        <b>Ищите</b> книгу или автора в строке поиска сверху.
+        <b>Нажмите на книгу</b> — она отметится прочитанной.
+        <b>Сердечко</b> — добавить в избранное.
+        Слева сверху — <b>«Создать список книг»</b>: соберите свой план чтения с дедлайном (можно смешивать книги из разных библиотек), и <b>«Трекер чтения»</b>: отмечайте дни месяца, когда читали, и следите за прогрессом по месяцам.
+        Справа сверху — <b>войдите</b>, чтобы прогресс сохранялся на всех устройствах.
+      </p>
+    </details>
+
+    <div class="footer-links">
+      <a href="mailto:dichenko.kristina03@mail.ru?subject=Вопрос%20по%20сайту%20«Библиотека%20книг»" class="footer-link">Написать с любым вопросом/предложением</a>
+      <span class="footer-link-sep">·</span>
+      <button type="button" class="footer-link footer-link-btn" id="install-hint-btn">Добавить на главный экран телефона</button>
+    </div>
+
+    <p class="footer-signature">Сделано с любовью к чтению</p>
+  </footer>
+
+  <div class="modal-backdrop" id="install-hint-modal">
+    <div class="modal-card install-hint-card">
+      <button class="modal-close" id="install-hint-close-btn" aria-label="Закрыть">×</button>
+      <p class="rb-eyebrow">Добавить на главный экран</p>
+      <h2 class="rb-title" style="font-size:19px;">Чтобы сайт открывался как приложение</h2>
+      <div class="install-hint-block">
+        <p class="install-hint-device">На iPhone / iPad (Safari)</p>
+        <p class="install-hint-steps">Нажмите значок «Поделиться» <span class="ih-icon">⬆</span> внизу экрана → «На экран «Домой»» → «Добавить».</p>
+      </div>
+      <div class="install-hint-block">
+        <p class="install-hint-device">На Android (Chrome)</p>
+        <p class="install-hint-steps">Откройте меню (три точки) в правом верхнем углу → «Добавить на главный экран» → «Установить».</p>
+      </div>
+    </div>
+  </div>
+
   <div id="site-content" class="site-content">
 
   <details class="epoch-desc-toggle library-guide" id="library-guide-toggle" style="display:none;">
@@ -1669,20 +1743,6 @@
 
   <main id="epochs"></main>
   <p class="empty-note" id="empty-note">Ничего не найдено по этому фильтру.</p>
-
-  <footer class="site">
-    <details class="footer-help" id="footer-help">
-      <summary>Как пользоваться сайтом</summary>
-      <p class="footer-help-text">
-        На сайте несколько <b>библиотек</b> — переключайтесь между ними карточками в самом верху страницы.
-        <b>Ищите</b> книгу или автора в строке поиска сверху.
-        <b>Нажмите на книгу</b> — она отметится прочитанной.
-        <b>Сердечко</b> — добавить в избранное.
-        Слева сверху — <b>«Создать список книг»</b>: соберите свой план чтения с дедлайном (можно смешивать книги из разных библиотек), и <b>«Трекер чтения»</b>: отмечайте дни месяца, когда читали, и следите за прогрессом по месяцам.
-        Справа сверху — <b>войдите</b>, чтобы прогресс сохранялся на всех устройствах.
-      </p>
-    </details>
-  </footer>
 
   </div>
 </div>
@@ -3373,6 +3433,16 @@
   randomBookModal.addEventListener('click', function(ev){ if (ev.target === randomBookModal) randomBookModal.classList.remove('open'); });
   document.getElementById('rb-another-btn').addEventListener('click', pickRandomBook);
 
+  document.getElementById('install-hint-btn').addEventListener('click', function(){
+    document.getElementById('install-hint-modal').classList.add('open');
+  });
+  document.getElementById('install-hint-close-btn').addEventListener('click', function(){
+    document.getElementById('install-hint-modal').classList.remove('open');
+  });
+  document.getElementById('install-hint-modal').addEventListener('click', function(ev){
+    if (ev.target === this) this.classList.remove('open');
+  });
+
   rbReadBtn.addEventListener('click', function(){
     if (!currentRandomBook) return;
     requestToggleRead(currentRandomBook.id, currentRandomBook.row);
@@ -3440,19 +3510,33 @@
     }, 50);
   }
 
+  function closeSiteContent(){
+    librarySelected = false;
+    document.getElementById('site-content').classList.remove('show');
+    setTimeout(function(){
+      try { document.getElementById('library-picker').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(e){}
+    }, 50);
+  }
+
   function renderLibrarySwitcher(){
     var wrap = document.getElementById('library-switcher');
     wrap.innerHTML = '';
     LIBRARIES.forEach(function(lib, idx){
       var isActive = librarySelected && idx === activeLibraryIndex;
       var card = el('div', 'library-card' + (isActive ? ' active' : ''));
+      if (isActive) card.title = 'Нажмите, чтобы свернуть';
       card.appendChild(el('span', 'library-card-check', '✓'));
       card.appendChild(el('p', 'library-card-title', escapeHtml(lib.title)));
       if (lib.shortDesc) card.appendChild(el('p', 'library-card-desc', escapeHtml(lib.shortDesc)));
       card.appendChild(el('span', 'library-card-count', countBooksInLibrary(lib) + ' книг'));
       card.addEventListener('click', function(){
-        if (idx !== activeLibraryIndex) switchLibrary(idx);
-        revealSiteContent();
+        if (librarySelected && idx === activeLibraryIndex) {
+          // повторный клик по уже открытой библиотеке — закрываем обратно
+          closeSiteContent();
+        } else {
+          if (idx !== activeLibraryIndex) switchLibrary(idx);
+          revealSiteContent();
+        }
         renderLibrarySwitcher();
       });
       wrap.appendChild(card);
