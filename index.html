@@ -736,6 +736,8 @@
 
   /* ---------- Режим просмотра списка ---------- */
   #le-view{ display:none; }
+  #le-view.is-visible{ display:block; }
+  #le-edit.is-hidden{ display:none; }
   .le-view-topline{
     display:grid;
     grid-template-columns: 1fr auto 1fr;
@@ -1759,23 +1761,28 @@
   });
 
   function openExistingList(list){
+    var rawItems = list.items;
+    if (typeof rawItems === 'string') {
+      try { rawItems = JSON.parse(rawItems); } catch(e) { rawItems = []; }
+    }
+    if (!Array.isArray(rawItems)) rawItems = [];
     draftList = {
       id: list.id,
       name: list.name || '',
       description: list.description || '',
       deadline: list.deadline || '',
-      items: (list.items || []).map(function(it){ return Object.assign({}, it); })
+      items: rawItems.map(function(it){ return Object.assign({}, it); })
     };
     openModalInViewMode();
   }
 
   function showViewMode(){
-    document.getElementById('le-view').style.display = 'block';
-    document.getElementById('le-edit').style.display = 'none';
+    document.getElementById('le-view').classList.add('is-visible');
+    document.getElementById('le-edit').classList.add('is-hidden');
   }
   function showEditMode(){
-    document.getElementById('le-view').style.display = 'none';
-    document.getElementById('le-edit').style.display = 'block';
+    document.getElementById('le-view').classList.remove('is-visible');
+    document.getElementById('le-edit').classList.remove('is-hidden');
   }
 
   function openModalInViewMode(){
@@ -1814,6 +1821,16 @@
   }
 
   function renderListView(){
+    try {
+      renderListViewInner();
+    } catch(e) {
+      var itemsRoot = document.getElementById('le-view-items');
+      if (itemsRoot) itemsRoot.innerHTML = '<p class="le-empty-hint">Ошибка отображения списка: ' + escapeHtml(e.message) + '</p>';
+    }
+  }
+
+  function renderListViewInner(){
+    if (!Array.isArray(draftList.items)) draftList.items = [];
     document.getElementById('le-view-name').textContent = draftList.name || 'Без названия';
     document.getElementById('le-view-deadline').textContent = formatDeadline(draftList.deadline);
 
