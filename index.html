@@ -1579,6 +1579,14 @@
     </p>
   </div>
 
+  <div class="home-lists" id="home-lists">
+    <div class="home-lists-head">
+      <p class="home-lists-title">Мои списки книг</p>
+      <button type="button" class="home-lists-add-btn" id="home-lists-add-btn">+ Новый список</button>
+    </div>
+    <div class="home-lists-grid" id="home-lists-grid"></div>
+  </div>
+
   <div class="library-picker" id="library-picker">
     <p class="library-picker-label">Выберите библиотеку</p>
     <div class="library-cards" id="library-switcher"></div>
@@ -1643,14 +1651,6 @@
       <button class="filter-btn" data-filter="read">Прочитано</button>
       <button class="filter-btn" data-filter="fav">Избранное</button>
     </div>
-  </div>
-
-  <div class="home-lists" id="home-lists">
-    <div class="home-lists-head">
-      <p class="home-lists-title">Мои списки книг</p>
-      <button type="button" class="home-lists-add-btn" id="home-lists-add-btn">+ Новый список</button>
-    </div>
-    <div class="home-lists-grid" id="home-lists-grid"></div>
   </div>
 
   <div class="modal-backdrop" id="random-book-modal">
@@ -1721,16 +1721,6 @@
   ];
   var activeLibraryIndex = 0;
   var librarySelected = false;
-  try {
-    var savedLibIdx = localStorage.getItem('kanon-active-library');
-    if (savedLibIdx !== null) {
-      var parsedIdx = parseInt(savedLibIdx, 10);
-      if (!isNaN(parsedIdx) && LIBRARIES[parsedIdx]) {
-        activeLibraryIndex = parsedIdx;
-        librarySelected = true;
-      }
-    }
-  } catch(e){}
   var DATA = LIBRARIES[activeLibraryIndex].blocks;
   var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -3444,7 +3434,6 @@
   function revealSiteContent(){
     if (librarySelected) return;
     librarySelected = true;
-    try { localStorage.setItem('kanon-active-library', String(activeLibraryIndex)); } catch(e){}
     var content = document.getElementById('site-content');
     content.classList.add('show');
     setTimeout(function(){
@@ -3456,7 +3445,8 @@
     var wrap = document.getElementById('library-switcher');
     wrap.innerHTML = '';
     LIBRARIES.forEach(function(lib, idx){
-      var card = el('div', 'library-card' + (idx === activeLibraryIndex ? ' active' : ''));
+      var isActive = librarySelected && idx === activeLibraryIndex;
+      var card = el('div', 'library-card' + (isActive ? ' active' : ''));
       card.appendChild(el('span', 'library-card-check', '✓'));
       card.appendChild(el('p', 'library-card-title', escapeHtml(lib.title)));
       if (lib.shortDesc) card.appendChild(el('p', 'library-card-desc', escapeHtml(lib.shortDesc)));
@@ -3464,6 +3454,7 @@
       card.addEventListener('click', function(){
         if (idx !== activeLibraryIndex) switchLibrary(idx);
         revealSiteContent();
+        renderLibrarySwitcher();
       });
       wrap.appendChild(card);
     });
@@ -3488,7 +3479,6 @@
   function switchLibrary(idx){
     activeLibraryIndex = idx;
     DATA = LIBRARIES[idx].blocks;
-    try { localStorage.setItem('kanon-active-library', String(idx)); } catch(e){}
 
     // сбрасываем поиск и фильтры при переключении библиотеки
     searchQuery = '';
@@ -3516,9 +3506,6 @@
   updateOfflineBadge();
   renderLibrarySwitcher();
   updateLibraryHeader();
-  if (librarySelected) {
-    document.getElementById('site-content').classList.add('show');
-  }
 })();
 
 /* Офлайн-доступ: регистрируем service worker (файл sw.js должен лежать
