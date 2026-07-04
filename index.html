@@ -371,6 +371,42 @@
   .offline-badge.is-offline{ border-color: var(--heart); color: var(--heart); }
   .offline-badge.is-syncing{ border-color: var(--c-accent); color: var(--c-accent); }
 
+  .scroll-top-btn{
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    z-index: 60;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-glass);
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity .2s ease, transform .2s ease, border-color .15s ease, color .15s ease;
+  }
+  .scroll-top-btn.show{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .scroll-top-btn:hover{ border-color: var(--c-accent); color: var(--ink); }
+  .scroll-top-btn svg{ width:19px; height:19px; stroke: currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  @media (max-width: 600px){
+    .scroll-top-btn{ bottom: 16px; right: 16px; width:40px; height:40px; }
+  }
+
+
   .milestone-toast{
     position: fixed;
     top: 22px;
@@ -1474,6 +1510,10 @@
 </div>
 
 <div class="offline-badge" id="offline-badge"></div>
+
+<button type="button" class="scroll-top-btn" id="scroll-top-btn" aria-label="Наверх">
+  <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
 
 <div class="milestone-toast" id="milestone-toast">
   <span class="milestone-emoji">🎉</span>
@@ -3577,6 +3617,17 @@
     updateStats();
     applyFilter();
   }
+
+  /* ==================== КНОПКА «НАВЕРХ» ==================== */
+  (function initScrollTopBtn(){
+    var btn = document.getElementById('scroll-top-btn');
+    window.addEventListener('scroll', function(){
+      btn.classList.toggle('show', window.scrollY > 500);
+    });
+    btn.addEventListener('click', function(){
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
 
   render();
   initFilters();
