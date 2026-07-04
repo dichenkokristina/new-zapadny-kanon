@@ -342,11 +342,26 @@
   footer.site{ text-align:center; margin-top: 50px; font-size: 12.5px; color: var(--ink-faint); }
 
   @media (max-width: 600px){
-    .wrap{ padding: 36px 14px 100px; }
+    .wrap{ padding: 68px 14px 100px; }
     .epoch > summary.epoch-head{ padding:16px; gap:14px; }
     .epoch-letter{ font-size:34px; min-width:34px; }
     .epoch-body{ padding: 14px 14px 20px; }
     .toolbar{ flex-direction:column; align-items:stretch; }
+
+    .lists-corner{ top: 14px; left: 14px; }
+    .user-corner{ top: 14px; right: 14px; }
+
+    .lists-pill{
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    .lists-pill-label{ display:none; }
+    .lists-pill svg{ width:17px; height:17px; }
+
+    .lists-menu, .user-menu{ width: min(78vw, 260px); }
   }
 
   :focus-visible{ outline: 2px solid var(--c-accent); outline-offset: 2px; }
@@ -492,6 +507,8 @@
     position:relative;
     width: 100%;
     max-width: 380px;
+    max-height: 88vh;
+    overflow-y: auto;
     background: rgba(14,35,42,0.92);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -643,7 +660,7 @@
 
   /* ---------- Редактор списка (модалка) ---------- */
   .list-editor-card{ max-width: 480px; text-align:left; }
-  .list-editor-card h2{
+  .le-edit-title{
     font-family: var(--font-display); font-style: italic; font-size: 22px;
     margin: 4px 0 18px; color: var(--ink); text-align:center;
   }
@@ -717,17 +734,93 @@
   }
   .le-delete-btn:hover{ border-color: var(--heart); }
 
+  /* ---------- Режим просмотра списка ---------- */
+  #le-view{ display:none; }
+  .le-view-topline{
+    display:grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items:start;
+    gap: 8px;
+    margin: 4px 0 4px;
+  }
+  .le-view-name{
+    grid-column: 2;
+    font-family: var(--font-display); font-style: italic; font-weight:600;
+    font-size: clamp(18px, 5vw, 22px);
+    color: var(--ink);
+    margin:0;
+    text-align:center;
+    word-break: break-word;
+  }
+  .le-view-deadline{
+    grid-column: 3;
+    justify-self: end;
+    font-size: 11px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    padding-top: 4px;
+  }
+  .le-view-desc{
+    text-align:center;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 8px 0 18px;
+    line-height: 1.5;
+  }
+  .le-view-progress{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom: 18px;
+  }
+  .le-view-progress-label{
+    font-family: var(--font-display); font-weight:700; font-size: 13px;
+    color: var(--ink); white-space:nowrap; flex-shrink:0;
+  }
+  .le-view-progress .progress-track{ flex:1; margin-top:0; }
+
+  .le-view-items{ max-height: 320px; overflow-y:auto; margin-bottom: 18px; }
+  .lv-item{ padding: 9px 2px; border-bottom: 1px solid var(--border-glass-soft); }
+  .lv-item:last-child{ border-bottom:none; }
+  .lv-item-row{ display:flex; align-items:center; gap:10px; }
+  .lv-title{
+    flex:1; min-width:0; font-size: 13.5px; color: var(--ink-soft); cursor:pointer;
+  }
+  .lv-item.is-done .lv-title{ text-decoration: line-through; text-decoration-color: var(--ink-faint); color: var(--ink-faint); }
+  .lv-tag{
+    font-size: 9.5px; text-transform:uppercase; letter-spacing:0.03em;
+    color: var(--ink-faint); border: 1px solid var(--border-glass-soft);
+    border-radius:4px; padding: 1px 5px; flex-shrink:0;
+  }
+  .lv-comment{
+    margin: 4px 0 0 29px;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    line-height: 1.45;
+  }
+  .lv-item.is-done .check{ background: var(--ink); border-color: var(--ink); }
+  .lv-item.is-done .check svg{ opacity:1; transform: scale(1); }
+  .lv-spacer{ width:19px; height:19px; flex-shrink:0; display:inline-block; }
+
+  .le-edit-toggle-btn{
+    width:100%; padding: 10px; border-radius: 999px;
+    border: 1px solid var(--border-glass); background: transparent;
+    color: var(--ink-soft); font-family: var(--font-body); font-size: 13px;
+    cursor:pointer;
+  }
+  .le-edit-toggle-btn:hover{ border-color: var(--c-accent); color: var(--ink); }
+
   /* ---------- Панель режима добавления (picking) ---------- */
   .picking-bar{
     position: fixed;
-    bottom: 22px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 90;
     display:none;
     align-items:center;
-    gap: 16px;
-    padding: 12px 20px;
+    gap: 12px;
+    padding: 10px 12px 10px 16px;
+    max-width: calc(100vw - 24px);
+    width: max-content;
     background: rgba(14,35,42,0.94);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -736,18 +829,39 @@
     box-shadow: 0 12px 32px rgba(0,0,0,0.4);
     color: var(--ink);
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 12.5px;
   }
   .picking-bar.open{ display:flex; }
+  .picking-bar span{
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .picking-bar button{
-    padding: 8px 18px;
+    flex-shrink: 0;
+    padding: 8px 16px;
     border-radius: 999px;
     border:none;
     background: linear-gradient(135deg, #BFE3E8, #8FC1E0);
     color: #0A1B21;
     font-weight:600;
-    font-size: 13px;
+    font-size: 12.5px;
     cursor:pointer;
+  }
+  @media (max-width: 480px){
+    .picking-bar{
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      transform: none;
+      width: auto;
+      max-width: none;
+      padding: 9px 10px 9px 14px;
+      font-size: 12px;
+    }
+    .picking-bar button{ padding: 7px 13px; font-size: 12px; }
   }
 
   /* кнопка добавления в список на строке книги / у автора */
@@ -786,7 +900,7 @@
 <div class="lists-corner" id="lists-corner">
   <button class="lists-pill" id="lists-pill-btn">
     <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-    Создать список книг
+    <span class="lists-pill-label">Создать список книг</span>
   </button>
   <div class="lists-menu" id="lists-menu">
     <button class="lists-new-btn" id="lists-new-btn">+ Новый список</button>
@@ -855,34 +969,55 @@
 <div class="modal-backdrop" id="list-editor-modal">
   <div class="modal-card list-editor-card">
     <button class="modal-close" id="list-editor-close-btn" aria-label="Закрыть">×</button>
-    <h2>Список чтения</h2>
 
-    <div class="le-field">
-      <label for="le-name">Название списка</label>
-      <input type="text" id="le-name" maxlength="80" placeholder="Например, «Русская классика лета»">
-    </div>
-    <div class="le-row-2">
-      <div class="le-field">
-        <label for="le-deadline">Дедлайн (необязательно)</label>
-        <input type="date" id="le-deadline">
+    <div class="le-view" id="le-view">
+      <div class="le-view-topline">
+        <span></span>
+        <h2 class="le-view-name" id="le-view-name"></h2>
+        <span class="le-view-deadline" id="le-view-deadline"></span>
       </div>
+      <p class="le-view-desc" id="le-view-desc"></p>
+
+      <div class="le-view-progress" id="le-view-progress">
+        <span class="le-view-progress-label" id="le-view-progress-label">0/0</span>
+        <div class="progress-track"><div class="progress-fill" id="le-view-progress-fill"></div></div>
+      </div>
+
+      <div class="le-view-items" id="le-view-items"></div>
+
+      <button type="button" class="le-edit-toggle-btn" id="le-edit-toggle-btn">Редактировать список</button>
     </div>
-    <div class="le-field">
-      <label for="le-description">Описание (необязательно)</label>
-      <textarea id="le-description" rows="2" maxlength="400" placeholder="Пара слов о списке"></textarea>
-    </div>
 
-    <button type="button" class="le-add-books-btn" id="le-add-books-btn">+ Добавить книги и авторов из «Все»</button>
+    <div class="le-edit" id="le-edit">
+      <h2 class="le-edit-title">Список чтения</h2>
 
-    <div class="le-items" id="le-items">
-      <p class="le-empty-hint" id="le-empty-hint">Пока пусто — добавьте книги или авторов кнопкой выше.</p>
-    </div>
+      <div class="le-field">
+        <label for="le-name">Название списка</label>
+        <input type="text" id="le-name" maxlength="80" placeholder="Например, «Русская классика лета»">
+      </div>
+      <div class="le-row-2">
+        <div class="le-field">
+          <label for="le-deadline">Дедлайн (необязательно)</label>
+          <input type="date" id="le-deadline">
+        </div>
+      </div>
+      <div class="le-field">
+        <label for="le-description">Описание (необязательно)</label>
+        <textarea id="le-description" rows="2" maxlength="400" placeholder="Пара слов о списке"></textarea>
+      </div>
 
-    <p class="auth-msg" id="le-msg"></p>
+      <button type="button" class="le-add-books-btn" id="le-add-books-btn">+ Добавить книги и авторов из «Все»</button>
 
-    <div class="le-actions">
-      <button type="button" class="le-delete-btn" id="le-delete-btn" style="display:none;">Удалить список</button>
-      <button type="button" class="auth-submit" id="le-save-btn" style="margin-top:0;">Сохранить список</button>
+      <div class="le-items" id="le-items">
+        <p class="le-empty-hint" id="le-empty-hint">Пока пусто — добавьте книги или авторов кнопкой выше.</p>
+      </div>
+
+      <p class="auth-msg" id="le-msg"></p>
+
+      <div class="le-actions">
+        <button type="button" class="le-delete-btn" id="le-delete-btn" style="display:none;">Удалить список</button>
+        <button type="button" class="auth-submit" id="le-save-btn" style="margin-top:0;">Сохранить список</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1620,7 +1755,7 @@
   listsNewBtn.addEventListener('click', function(){
     listsMenu.classList.remove('open');
     draftList = { id: null, name: '', description: '', deadline: '', items: [] };
-    openListEditor();
+    openModalInEditMode();
   });
 
   function openExistingList(list){
@@ -1631,10 +1766,25 @@
       deadline: list.deadline || '',
       items: (list.items || []).map(function(it){ return Object.assign({}, it); })
     };
-    openListEditor();
+    openModalInViewMode();
   }
 
-  function openListEditor(){
+  function showViewMode(){
+    document.getElementById('le-view').style.display = '';
+    document.getElementById('le-edit').style.display = 'none';
+  }
+  function showEditMode(){
+    document.getElementById('le-view').style.display = 'none';
+    document.getElementById('le-edit').style.display = '';
+  }
+
+  function openModalInViewMode(){
+    renderListView();
+    showViewMode();
+    listEditorModal.classList.add('open');
+  }
+
+  function openModalInEditMode(){
     leName.value = draftList.name;
     leDeadline.value = draftList.deadline || '';
     leDescription.value = draftList.description || '';
@@ -1642,13 +1792,90 @@
     leMsg.textContent = '';
     leMsg.className = 'auth-msg';
     renderLeItems();
+    showEditMode();
     listEditorModal.classList.add('open');
   }
+
   function closeListEditor(){
     listEditorModal.classList.remove('open');
   }
   leCloseBtn.addEventListener('click', closeListEditor);
   listEditorModal.addEventListener('click', function(ev){ if (ev.target === listEditorModal) closeListEditor(); });
+
+  document.getElementById('le-edit-toggle-btn').addEventListener('click', function(){
+    openModalInEditMode();
+  });
+
+  function formatDeadline(iso){
+    if (!iso) return '';
+    var parts = iso.split('-');
+    if (parts.length !== 3) return iso;
+    return 'до ' + parts[2] + '.' + parts[1] + '.' + parts[0];
+  }
+
+  function renderListView(){
+    document.getElementById('le-view-name').textContent = draftList.name || 'Без названия';
+    document.getElementById('le-view-deadline').textContent = formatDeadline(draftList.deadline);
+
+    var descEl = document.getElementById('le-view-desc');
+    if (draftList.description) {
+      descEl.textContent = draftList.description;
+      descEl.style.display = '';
+    } else {
+      descEl.style.display = 'none';
+    }
+
+    var bookItems = draftList.items.filter(function(it){ return it.type === 'book'; });
+    var readCount = bookItems.filter(function(it){ return !!state.read[it.id]; }).length;
+    var total = bookItems.length;
+    document.getElementById('le-view-progress-label').textContent = readCount + '/' + total;
+    var pct = total ? (readCount / total * 100) : 0;
+    document.getElementById('le-view-progress-fill').style.width = pct + '%';
+    document.getElementById('le-view-progress').style.display = total ? '' : 'none';
+
+    var itemsRoot = document.getElementById('le-view-items');
+    itemsRoot.innerHTML = '';
+    if (!draftList.items.length) {
+      itemsRoot.appendChild(el('p', 'le-empty-hint', 'В этом списке пока нет книг.'));
+      return;
+    }
+    draftList.items.forEach(function(item){
+      var wrap = el('div', 'lv-item');
+      var row = el('div', 'lv-item-row');
+
+      if (item.type === 'book') {
+        var isRead = !!state.read[item.id];
+        if (isRead) wrap.classList.add('is-done');
+        var check = el('button', 'check', ICON_CHECK);
+        check.type = 'button';
+        check.addEventListener('click', function(){
+          if (state.read[item.id]) delete state.read[item.id];
+          else state.read[item.id] = true;
+          saveProgress();
+          updateStats();
+          applyStateToDOM();
+          applyFilter();
+          renderListView();
+        });
+        row.appendChild(check);
+      } else {
+        row.appendChild(el('span', 'lv-spacer'));
+      }
+
+      row.appendChild(el('span', 'lv-tag', item.type === 'author' ? 'автор' : 'книга'));
+      var titleEl = el('span', 'lv-title', escapeHtml(item.type === 'author' ? item.name : item.title));
+      titleEl.addEventListener('click', function(){
+        if (item.type === 'book') check.click();
+      });
+      row.appendChild(titleEl);
+      wrap.appendChild(row);
+
+      if (item.comment) {
+        wrap.appendChild(el('p', 'lv-comment', escapeHtml(item.comment)));
+      }
+      itemsRoot.appendChild(wrap);
+    });
+  }
 
   function renderLeItems(){
     leItems.innerHTML = '';
@@ -1684,6 +1911,10 @@
   }
 
   leAddBooksBtn.addEventListener('click', function(){
+    // сохраняем то, что уже введено в форму, прежде чем скрыть модалку
+    draftList.name = leName.value.trim();
+    draftList.deadline = leDeadline.value || '';
+    draftList.description = leDescription.value;
     closeListEditor();
     enterPickingMode();
   });
@@ -1758,7 +1989,7 @@
 
   pickingDoneBtn.addEventListener('click', function(){
     exitPickingMode();
-    openListEditor();
+    openModalInEditMode();
   });
 
   leSaveBtn.addEventListener('click', function(){
@@ -1791,8 +2022,9 @@
         return;
       }
       if (res.data && res.data[0]) draftList.id = res.data[0].id;
-      closeListEditor();
       loadLists();
+      renderListView();
+      showViewMode();
     }).catch(function(){
       leSaveBtn.disabled = false;
       leMsg.textContent = 'Ошибка соединения.';
