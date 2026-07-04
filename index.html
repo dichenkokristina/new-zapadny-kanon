@@ -1268,6 +1268,24 @@
   }
   .lv-pages-fill{ height:100%; background: var(--c-accent); }
 
+  .lv-edit-row{
+    display:flex; gap:6px; flex-wrap:wrap;
+    margin: 6px 0 0 29px;
+  }
+  .lv-status-select{
+    flex: 1 1 110px;
+    padding: 5px 8px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-glass-soft); background: rgba(255,255,255,0.04);
+    font-family: var(--font-body); font-size: 11px; color: var(--ink-soft);
+  }
+  .lv-pages-input{
+    flex: 1 1 84px; min-width:0;
+    padding: 5px 8px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-glass-soft); background: rgba(255,255,255,0.04);
+    font-family: var(--font-body); font-size: 11px; color: var(--ink-soft);
+  }
+  .lv-pages-input::placeholder{ color: var(--ink-faint); }
+
   .le-edit-toggle-btn{
     width:100%; padding: 10px; border-radius: 999px;
     border: 1px solid var(--border-glass); background: transparent;
@@ -3042,6 +3060,51 @@
 
       wrap.appendChild(row);
 
+      if (item.type === 'book') {
+        var editRow = el('div', 'lv-edit-row');
+
+        var statusSelect = document.createElement('select');
+        statusSelect.className = 'lv-status-select';
+        statusSelect.innerHTML =
+          '<option value="not_started">Не начата</option>' +
+          '<option value="reading">Читаю сейчас</option>' +
+          '<option value="finished">Прочитана</option>';
+        statusSelect.value = item.status || 'not_started';
+        statusSelect.addEventListener('change', function(){
+          item.status = statusSelect.value;
+          persistDraftList();
+          renderListView();
+        });
+        editRow.appendChild(statusSelect);
+
+        var pagesTotalInput = document.createElement('input');
+        pagesTotalInput.type = 'number';
+        pagesTotalInput.min = '0';
+        pagesTotalInput.placeholder = 'Всего стр.';
+        pagesTotalInput.className = 'lv-pages-input';
+        pagesTotalInput.value = item.pagesTotal != null ? item.pagesTotal : '';
+
+        var pagesReadInput = document.createElement('input');
+        pagesReadInput.type = 'number';
+        pagesReadInput.min = '0';
+        pagesReadInput.placeholder = 'Прочитано стр.';
+        pagesReadInput.className = 'lv-pages-input';
+        pagesReadInput.value = item.pagesRead != null ? item.pagesRead : '';
+
+        function commitPages(){
+          item.pagesTotal = pagesTotalInput.value === '' ? null : parseInt(pagesTotalInput.value, 10);
+          item.pagesRead = pagesReadInput.value === '' ? null : parseInt(pagesReadInput.value, 10);
+          persistDraftList();
+          renderListView();
+        }
+        pagesTotalInput.addEventListener('change', commitPages);
+        pagesReadInput.addEventListener('change', commitPages);
+
+        editRow.appendChild(pagesTotalInput);
+        editRow.appendChild(pagesReadInput);
+        wrap.appendChild(editRow);
+      }
+
       if (item.type === 'book' && item.pagesTotal) {
         var pagesRead = item.pagesRead || 0;
         var pagesTotal = item.pagesTotal;
@@ -3091,44 +3154,6 @@
       commentArea.value = item.comment || '';
       commentArea.addEventListener('input', function(){ item.comment = commentArea.value; });
       wrap.appendChild(commentArea);
-
-      if (item.type === 'book') {
-        var progressRow = el('div', 'le-item-progress-row');
-
-        var statusSelect = document.createElement('select');
-        statusSelect.className = 'le-status-select';
-        statusSelect.innerHTML =
-          '<option value="not_started">Не начата</option>' +
-          '<option value="reading">Читаю сейчас</option>' +
-          '<option value="finished">Прочитана</option>';
-        statusSelect.value = item.status || 'not_started';
-        statusSelect.addEventListener('change', function(){ item.status = statusSelect.value; });
-        progressRow.appendChild(statusSelect);
-
-        var pagesTotalInput = document.createElement('input');
-        pagesTotalInput.type = 'number';
-        pagesTotalInput.min = '0';
-        pagesTotalInput.placeholder = 'Всего стр.';
-        pagesTotalInput.className = 'le-pages-input';
-        pagesTotalInput.value = item.pagesTotal != null ? item.pagesTotal : '';
-        pagesTotalInput.addEventListener('input', function(){
-          item.pagesTotal = pagesTotalInput.value === '' ? null : parseInt(pagesTotalInput.value, 10);
-        });
-        progressRow.appendChild(pagesTotalInput);
-
-        var pagesReadInput = document.createElement('input');
-        pagesReadInput.type = 'number';
-        pagesReadInput.min = '0';
-        pagesReadInput.placeholder = 'Прочитано стр.';
-        pagesReadInput.className = 'le-pages-input';
-        pagesReadInput.value = item.pagesRead != null ? item.pagesRead : '';
-        pagesReadInput.addEventListener('input', function(){
-          item.pagesRead = pagesReadInput.value === '' ? null : parseInt(pagesReadInput.value, 10);
-        });
-        progressRow.appendChild(pagesReadInput);
-
-        wrap.appendChild(progressRow);
-      }
 
       leItems.appendChild(wrap);
     });
@@ -3216,16 +3241,8 @@
     openModalInEditMode();
   });
 
-  leSaveBtn.addEventListener('click', function(){
-    var name = leName.value.trim();
-    if (!name) {
-      leMsg.textContent = 'Дайте списку название.';
-      leMsg.className = 'auth-msg error';
-      return;
-    }
-    draftList.name = name;
-    draftList.deadline = leDeadline.value || null;
-    draftList.description = leDescription.value.trim() || null;
+  function persistDraftList(){
+    if (!currentUser || !draftList) return;
     if (!draftList.id) draftList.id = makeUUID();
 
     var payload = {
@@ -3238,15 +3255,10 @@
       updated_at: new Date().toISOString()
     };
 
-    // оптимистично обновляем локально и на экране сразу — не ждём сети
     var idx = myLists.findIndex(function(l){ return l.id === draftList.id; });
     if (idx !== -1) myLists[idx] = payload; else myLists.unshift(payload);
     saveListsCache();
     renderListsMenu();
-
-    leSaveBtn.disabled = false;
-    renderListView();
-    showViewMode();
 
     supabase.from('reading_lists').upsert(payload).then(function(res){
       if (res.error) queueOp('list-upsert', payload);
@@ -3254,6 +3266,24 @@
     }).catch(function(){
       queueOp('list-upsert', payload);
     });
+  }
+
+  leSaveBtn.addEventListener('click', function(){
+    var name = leName.value.trim();
+    if (!name) {
+      leMsg.textContent = 'Дайте списку название.';
+      leMsg.className = 'auth-msg error';
+      return;
+    }
+    draftList.name = name;
+    draftList.deadline = leDeadline.value || null;
+    draftList.description = leDescription.value.trim() || null;
+
+    persistDraftList();
+
+    leSaveBtn.disabled = false;
+    renderListView();
+    showViewMode();
   });
 
   leDeleteBtn.addEventListener('click', function(){
