@@ -1008,7 +1008,7 @@
   .auth-msg.error{ color: var(--heart); }
   .auth-msg.ok{ color: var(--a-accent); }
 
-  /* ---------- Списки чтения (левый верхний угол) ---------- */
+  /* ---------- Списки книг (левый верхний угол) ---------- */
   .lists-corner{
     position: fixed;
     top: 22px;
@@ -1154,6 +1154,23 @@
   }
   .le-item textarea::placeholder{ color: var(--ink-faint); }
 
+  .le-item-progress-row{
+    display:flex; gap:6px; margin-top: 8px; flex-wrap: wrap;
+  }
+  .le-status-select{
+    flex: 1 1 120px;
+    padding: 6px 8px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-glass-soft); background: rgba(255,255,255,0.04);
+    font-family: var(--font-body); font-size: 11.5px; color: var(--ink-soft);
+  }
+  .le-pages-input{
+    flex: 1 1 90px; min-width: 0;
+    padding: 6px 8px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-glass-soft); background: rgba(255,255,255,0.04);
+    font-family: var(--font-body); font-size: 11.5px; color: var(--ink-soft);
+  }
+  .le-pages-input::placeholder{ color: var(--ink-faint); }
+
   .le-actions{ display:flex; gap:10px; align-items:center; }
   .le-delete-btn{
     padding: 11px 14px; border-radius: 999px;
@@ -1231,6 +1248,25 @@
   .lv-item.is-done .check{ background: var(--ink); border-color: var(--ink); }
   .lv-item.is-done .check svg{ opacity:1; transform: scale(1); }
   .lv-spacer{ width:19px; height:19px; flex-shrink:0; display:inline-block; }
+
+  .lv-status-badge{
+    flex-shrink:0;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .lv-status-reading{ background: rgba(143,193,224,0.18); color: var(--c-accent); }
+  .lv-status-finished{ background: rgba(159,205,186,0.18); color: var(--a-accent); }
+
+  .lv-pages{ margin: 5px 0 0 29px; display:flex; align-items:center; gap:8px; }
+  .lv-pages-text{ font-size: 11px; color: var(--ink-faint); flex-shrink:0; white-space:nowrap; }
+  .lv-pages-track{
+    flex:1; height:4px; border-radius:3px;
+    background: var(--border-glass-soft); overflow:hidden;
+  }
+  .lv-pages-fill{ height:100%; background: var(--c-accent); }
 
   .le-edit-toggle-btn{
     width:100%; padding: 10px; border-radius: 999px;
@@ -1579,7 +1615,7 @@
 
   <div class="home-lists" id="home-lists">
     <div class="home-lists-head">
-      <p class="home-lists-title">Мои списки чтения</p>
+      <p class="home-lists-title">Мои списки книг</p>
       <button type="button" class="home-lists-add-btn" id="home-lists-add-btn">+ Новый список</button>
     </div>
     <div class="home-lists-grid" id="home-lists-grid"></div>
@@ -2130,8 +2166,8 @@
 
     var listAdd = el('button', 'list-add-btn', '+');
     listAdd.type = 'button';
-    listAdd.setAttribute('aria-label', 'Добавить в список чтения');
-    listAdd.title = 'Добавить в свой список чтения';
+    listAdd.setAttribute('aria-label', 'Добавить в список книг');
+    listAdd.title = 'Добавить в свой список книг';
     listAdd.addEventListener('click', function(ev){
       ev.preventDefault(); ev.stopPropagation();
       toggleBookInDraft(book.id, book.title, listAdd);
@@ -2295,8 +2331,8 @@
 
     var authorListAdd = el('button', 'list-add-btn', '+');
     authorListAdd.type = 'button';
-    authorListAdd.setAttribute('aria-label', 'Добавить автора в список чтения');
-    authorListAdd.title = 'Добавить всего автора в свой список чтения';
+    authorListAdd.setAttribute('aria-label', 'Добавить автора в список книг');
+    authorListAdd.title = 'Добавить всего автора в свой список книг';
     authorListAdd.addEventListener('click', function(ev){
       ev.preventDefault(); ev.stopPropagation();
       toggleAuthorInDraft(authorId, author.name, authorListAdd);
@@ -2513,7 +2549,7 @@
     });
   }
 
-  /* ==================== СПИСКИ ЧТЕНИЯ ==================== */
+  /* ==================== СПИСКИ КНИГ ==================== */
 
   var listsCorner = document.getElementById('lists-corner');
   var listsPillBtn = document.getElementById('lists-pill-btn');
@@ -2997,7 +3033,28 @@
         if (item.type === 'book') check.click();
       });
       row.appendChild(titleEl);
+
+      if (item.type === 'book' && item.status && item.status !== 'not_started') {
+        var statusLabel = item.status === 'reading' ? 'Читаю' : 'Прочитана';
+        var statusBadge = el('span', 'lv-status-badge lv-status-' + item.status, statusLabel);
+        row.appendChild(statusBadge);
+      }
+
       wrap.appendChild(row);
+
+      if (item.type === 'book' && item.pagesTotal) {
+        var pagesRead = item.pagesRead || 0;
+        var pagesTotal = item.pagesTotal;
+        var pagesPct = Math.min(100, Math.round(pagesRead / pagesTotal * 100));
+        var pagesWrap = el('div', 'lv-pages');
+        pagesWrap.appendChild(el('span', 'lv-pages-text', pagesRead + ' / ' + pagesTotal + ' стр.'));
+        var pagesTrack = el('div', 'lv-pages-track');
+        var pagesFill = el('div', 'lv-pages-fill');
+        pagesFill.style.width = pagesPct + '%';
+        pagesTrack.appendChild(pagesFill);
+        pagesWrap.appendChild(pagesTrack);
+        wrap.appendChild(pagesWrap);
+      }
 
       if (item.comment) {
         wrap.appendChild(el('p', 'lv-comment', escapeHtml(item.comment)));
@@ -3034,6 +3091,44 @@
       commentArea.value = item.comment || '';
       commentArea.addEventListener('input', function(){ item.comment = commentArea.value; });
       wrap.appendChild(commentArea);
+
+      if (item.type === 'book') {
+        var progressRow = el('div', 'le-item-progress-row');
+
+        var statusSelect = document.createElement('select');
+        statusSelect.className = 'le-status-select';
+        statusSelect.innerHTML =
+          '<option value="not_started">Не начата</option>' +
+          '<option value="reading">Читаю сейчас</option>' +
+          '<option value="finished">Прочитана</option>';
+        statusSelect.value = item.status || 'not_started';
+        statusSelect.addEventListener('change', function(){ item.status = statusSelect.value; });
+        progressRow.appendChild(statusSelect);
+
+        var pagesTotalInput = document.createElement('input');
+        pagesTotalInput.type = 'number';
+        pagesTotalInput.min = '0';
+        pagesTotalInput.placeholder = 'Всего стр.';
+        pagesTotalInput.className = 'le-pages-input';
+        pagesTotalInput.value = item.pagesTotal != null ? item.pagesTotal : '';
+        pagesTotalInput.addEventListener('input', function(){
+          item.pagesTotal = pagesTotalInput.value === '' ? null : parseInt(pagesTotalInput.value, 10);
+        });
+        progressRow.appendChild(pagesTotalInput);
+
+        var pagesReadInput = document.createElement('input');
+        pagesReadInput.type = 'number';
+        pagesReadInput.min = '0';
+        pagesReadInput.placeholder = 'Прочитано стр.';
+        pagesReadInput.className = 'le-pages-input';
+        pagesReadInput.value = item.pagesRead != null ? item.pagesRead : '';
+        pagesReadInput.addEventListener('input', function(){
+          item.pagesRead = pagesReadInput.value === '' ? null : parseInt(pagesReadInput.value, 10);
+        });
+        progressRow.appendChild(pagesReadInput);
+
+        wrap.appendChild(progressRow);
+      }
 
       leItems.appendChild(wrap);
     });
@@ -3093,7 +3188,7 @@
       btn.classList.remove('is-added');
       btn.innerHTML = '+';
     } else {
-      draftList.items.push({ type: 'book', id: bookId, title: title, comment: '' });
+      draftList.items.push({ type: 'book', id: bookId, title: title, comment: '', status: 'not_started', pagesTotal: null, pagesRead: null });
       btn.classList.add('is-added');
       btn.innerHTML = '✓';
     }
